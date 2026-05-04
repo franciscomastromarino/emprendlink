@@ -1,4 +1,4 @@
-import { Container, Flex, Heading, HStack } from '@chakra-ui/react'
+import { Container, Heading, Stack, Text } from '@chakra-ui/react'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
@@ -64,14 +64,24 @@ export default async function FeedPage({ searchParams }: Props) {
   })
 
   return (
-    <Container maxW="6xl" py="6">
-      <Heading size="xl" mb="6">Miembros</Heading>
-      <Flex gap="6" direction={{ base: 'column', lg: 'row' }}>
+    <Container maxW="lg" py="6">
+      <Stack gap="5">
+        {/* Header */}
+        <Stack gap="1">
+          <Heading size="xl">Explorar</Heading>
+          <Text fontSize="sm" color="fg.muted">
+            Conectá con emprendedores de tu comunidad
+          </Text>
+        </Stack>
+
+        {/* Search + filters */}
         <Suspense>
           <FeedFilters />
         </Suspense>
+
+        {/* Members list */}
         <FeedList initialProfiles={profiles} filters={filters} />
-      </Flex>
+      </Stack>
     </Container>
   )
 }

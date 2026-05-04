@@ -8,5 +8,5 @@ export function buildIntroMessage(
   target: { fullName: string },
   current: { fullName: string; role: string; startup: string }
 ) {
-  return `Hola ${target.fullName}! Te encontré en Founder Radar (vía Emprending). Soy ${current.fullName}, ${current.role} en ${current.startup}. Me interesa conectar.`
+  return `Hola ${target.fullName}! Te encontré en EmprendLink. Soy ${current.fullName}, ${current.role} en ${current.startup}. Me interesa conectar.`
 }

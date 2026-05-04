@@ -29,7 +29,7 @@ const schema = z.object({
     .array(z.string())
     .min(1, 'Elegí al menos uno')
     .max(3, 'Máximo 3'),
-  bio: z.string().max(140, 'Máximo 140 caracteres').optional(),
+  bio: z.string().max(280, 'Máximo 280 caracteres').optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -82,6 +82,7 @@ export default function Step3Page() {
                         value={field.value}
                         onChange={field.onChange}
                         max={2}
+                        colorScheme="blue"
                       />
                     )}
                   />
@@ -101,6 +102,7 @@ export default function Step3Page() {
                         value={field.value}
                         onChange={field.onChange}
                         max={3}
+                        colorScheme="orange"
                       />
                     )}
                   />
@@ -111,11 +113,11 @@ export default function Step3Page() {
 
                 <Field.Root invalid={!!errors.bio}>
                   <Field.Label color="fg.muted" fontSize="sm">
-                    Una línea sobre vos ({bioLength}/140)
+                    Una línea sobre vos ({bioLength}/280)
                   </Field.Label>
                   <Textarea
                     {...register('bio')}
-                    maxLength={140}
+                    maxLength={280}
                     placeholder="Ej: 3ra startup, salí de YC W23, busco co-founder técnico para healthtech B2B"
                     rows={2}
                     bg="surface.input"

@@ -58,7 +58,7 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-// ============ Founder Radar tables ============
+// ============ emprendlink tables ============
 model Profile {
   id                 String   @id
   fullName           String

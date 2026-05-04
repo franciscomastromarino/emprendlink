@@ -2,6 +2,7 @@
 
 import { Button } from '@chakra-ui/react'
 import { useState } from 'react'
+import { Zap } from 'lucide-react'
 import { likeProfile } from '@/app/discover/actions'
 import { trackEvent } from '@/lib/analytics'
 
@@ -28,7 +29,7 @@ export function LikeButton({
 
   if (result === 'match') {
     return (
-      <Button colorPalette="green" size={size} disabled>
+      <Button colorPalette="green" size={size} borderRadius="full" disabled>
         Match!
       </Button>
     )
@@ -36,8 +37,8 @@ export function LikeButton({
 
   if (result === 'liked') {
     return (
-      <Button variant={variant} size={size} disabled>
-        Like enviado
+      <Button variant={variant} size={size} borderRadius="full" disabled>
+        Enviado
       </Button>
     )
   }
@@ -45,12 +46,14 @@ export function LikeButton({
   return (
     <Button
       colorPalette="brand"
-      variant={variant}
       size={size}
+      borderRadius="full"
       onClick={handleLike}
       loading={loading}
+      px="4"
     >
-      Me interesa
+      <Zap size={14} fill="currentColor" />
+      Conectar
     </Button>
   )
 }

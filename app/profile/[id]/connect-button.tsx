@@ -24,6 +24,7 @@ export function ConnectButton({ targetId }: { targetId: string }) {
       colorPalette="green"
       size="lg"
       w="full"
+      borderRadius="full"
       onClick={handleClick}
       loading={loading}
     >

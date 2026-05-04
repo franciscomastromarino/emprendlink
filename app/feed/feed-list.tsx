@@ -62,7 +62,7 @@ export function FeedList({
   }
 
   return (
-    <Stack gap="4" flex="1">
+    <Stack gap="0" flex="1">
       {profiles.map((profile) => (
         <ProfileCard key={profile.id} profile={profile} />
       ))}

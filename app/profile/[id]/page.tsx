@@ -62,7 +62,7 @@ export default async function ProfilePage({ params }: Props) {
         w="400px"
         h="400px"
         borderRadius="full"
-        bg="radial-gradient(circle, rgba(67,24,255,0.2) 0%, rgba(67,24,255,0.05) 40%, transparent 70%)"
+        bg="radial-gradient(circle, rgba(46,94,166,0.1) 0%, rgba(46,94,166,0.03) 40%, transparent 70%)"
         pointerEvents="none"
       />
 
@@ -76,10 +76,18 @@ export default async function ProfilePage({ params }: Props) {
           </Button>
 
           <Stack align="center" gap="3">
-            <Avatar.Root size="2xl">
-              <Avatar.Image src={profile.avatarUrl ?? undefined} />
-              <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
-            </Avatar.Root>
+            <Box
+              borderRadius="full"
+              p="0.5"
+              borderWidth="2px"
+              borderColor="surface.border"
+              display="inline-flex"
+            >
+              <Avatar.Root size="2xl">
+                <Avatar.Image src={profile.avatarUrl ?? undefined} />
+                <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
+              </Avatar.Root>
+            </Box>
             <Heading size="lg" textAlign="center">{profile.fullName}</Heading>
             <Text color="fg.muted">
               {profile.role} en {profile.startup}
@@ -126,7 +134,7 @@ export default async function ProfilePage({ params }: Props) {
                 <Heading size="xs" color="fg.muted">Intereses</Heading>
                 <Wrap gap="2">
                   {profile.interests.map((item) => (
-                    <Badge key={item} colorPalette="purple" variant="outline">{item}</Badge>
+                    <Badge key={item} colorPalette="brand" variant="outline">{item}</Badge>
                   ))}
                 </Wrap>
               </Stack>

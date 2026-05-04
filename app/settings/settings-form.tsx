@@ -7,6 +7,7 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import {
+  Avatar,
   Box,
   Button,
   Container,
@@ -14,18 +15,30 @@ import {
   Heading,
   HStack,
   Input,
+  NativeSelect,
+  SimpleGrid,
   Stack,
   Switch,
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { signOut } from 'next-auth/react'
 import { ROLES, INDUSTRIES, INTENTS, INTERESTS, TEAM_SIZES } from '@/lib/constants'
 import { ChipSelect } from '@/components/chip-select'
-import { updateProfile, deleteAccount } from './actions'
+import { updateProfile, deleteAccount, uploadAvatar } from './actions'
 import type { Profile } from '@prisma/client'
-import { LogOut, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import {
+  Camera,
+  LogOut,
+  Trash2,
+  User,
+  Target,
+  FileText,
+  Eye,
+  ChevronLeft,
+} from 'lucide-react'
 
 const schema = z.object({
   fullName: z.string().min(2).max(80),
@@ -46,15 +59,24 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const selectStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '8px 12px',
-  borderRadius: '8px',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  fontSize: '16px',
-  backgroundColor: '#1A1D35',
-  color: 'white',
-  appearance: 'none' as const,
+function SectionHeader({ icon: Icon, title }: { icon: React.ComponentType<{ size: number; color: string }>; title: string }) {
+  return (
+    <HStack gap="2" mb="4">
+      <Box
+        w="8"
+        h="8"
+        borderRadius="lg"
+        bg="#E8F0FE"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        flexShrink={0}
+      >
+        <Icon size={16} color="#2E5EA6" />
+      </Box>
+      <Heading size="sm">{title}</Heading>
+    </HStack>
+  )
 }
 
 export function SettingsForm({ profile }: { profile: Profile }) {
@@ -62,6 +84,28 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   const [saved, setSaved] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [phone, setPhone] = useState(profile.whatsappE164)
+  const [avatarPreview, setAvatarPreview] = useState(profile.avatarUrl ?? '')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingAvatar(true)
+    try {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const base64 = reader.result as string
+        setAvatarPreview(base64)
+        const { avatarUrl } = await uploadAvatar(base64)
+        setAvatarPreview(avatarUrl)
+        setValue('avatarUrl', avatarUrl)
+      }
+      reader.readAsDataURL(file)
+    } finally {
+      setTimeout(() => setUploadingAvatar(false), 500)
+    }
+  }
 
   const {
     register,
@@ -106,127 +150,226 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <Container maxW="sm" py="6">
+    <Container maxW="lg" py="6">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="5">
-          <Heading size="xl">Ajustes</Heading>
+        <Stack gap="6">
+          {/* Header */}
+          <HStack justify="space-between" align="start">
+            <Stack gap="0.5">
+              <HStack gap="2">
+                <Button asChild variant="ghost" size="sm" p="0" minW="auto" color="fg.muted">
+                  <Link href="/feed"><ChevronLeft size={20} /></Link>
+                </Button>
+                <Heading size="xl">Mi perfil</Heading>
+              </HStack>
+              <Text fontSize="sm" color="fg.muted" pl="7">
+                Gestioná tu perfil y preferencias
+              </Text>
+            </Stack>
+            <Button asChild variant="ghost" size="sm" color="brand.500" fontWeight="500">
+              <Link href={`/profile/${profile.id}`}>
+                <Eye size={14} />
+                Vista previa
+              </Link>
+            </Button>
+          </HStack>
 
-          <Box bg="surface.card" borderRadius="xl" p="5" borderWidth="1px" borderColor="surface.border">
+          {/* Avatar */}
+          <Stack align="center" gap="2">
+            <Box position="relative">
+              <Box
+                borderRadius="full"
+                p="0.5"
+                borderWidth="2px"
+                borderColor="surface.border"
+              >
+                <Avatar.Root size="2xl">
+                  <Avatar.Image src={avatarPreview || undefined} />
+                  <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
+                </Avatar.Root>
+              </Box>
+              <Box
+                position="absolute"
+                bottom="0"
+                right="0"
+                w="8"
+                h="8"
+                borderRadius="full"
+                bg="brand.500"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                cursor="pointer"
+                borderWidth="2px"
+                borderColor="white"
+                onClick={() => fileInputRef.current?.click()}
+                role="button"
+                aria-label="Cambiar foto de perfil"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
+              >
+                <Camera size={14} color="white" />
+              </Box>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+                onChange={handleAvatarChange}
+              />
+            </Box>
+            {uploadingAvatar && (
+              <Text fontSize="xs" color="fg.muted">Subiendo...</Text>
+            )}
+          </Stack>
+
+          {/* Section 1: Información básica */}
+          <Box>
+            <SectionHeader icon={User} title="Información básica" />
             <Stack gap="4">
-              <Field.Root invalid={!!errors.fullName}>
-                <Field.Label color="fg.muted" fontSize="sm">Nombre y apellido</Field.Label>
-                <Input {...register('fullName')} bg="surface.input" borderColor="surface.border" />
-                {errors.fullName && <Field.ErrorText>{errors.fullName.message}</Field.ErrorText>}
-              </Field.Root>
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap="4">
+                <Field.Root invalid={!!errors.fullName}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Nombre y apellido</Field.Label>
+                  <Input {...register('fullName')} bg="white" borderColor="surface.border" fontSize="sm" />
+                  {errors.fullName && <Field.ErrorText>{errors.fullName.message}</Field.ErrorText>}
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.whatsappE164}>
-                <Field.Label color="fg.muted" fontSize="sm">WhatsApp</Field.Label>
-                <PhoneInput
-                  defaultCountry="AR"
-                  value={phone}
-                  onChange={(val) => {
-                    setPhone(val || '')
-                    setValue('whatsappE164', val || '', { shouldValidate: true })
-                  }}
-                  international
-                  countryCallingCodeEditable={false}
-                  className="phone-input"
-                />
-                {errors.whatsappE164 && <Field.ErrorText>{errors.whatsappE164.message}</Field.ErrorText>}
-              </Field.Root>
+                <Field.Root invalid={!!errors.whatsappE164}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">WhatsApp</Field.Label>
+                  <PhoneInput
+                    defaultCountry="AR"
+                    value={phone}
+                    onChange={(val) => {
+                      setPhone(val || '')
+                      setValue('whatsappE164', val || '', { shouldValidate: true })
+                    }}
+                    international
+                    countryCallingCodeEditable={false}
+                    className="phone-input"
+                  />
+                  {errors.whatsappE164 && <Field.ErrorText>{errors.whatsappE164.message}</Field.ErrorText>}
+                </Field.Root>
+              </SimpleGrid>
 
-              <Field.Root invalid={!!errors.role}>
-                <Field.Label color="fg.muted" fontSize="sm">Rol</Field.Label>
-                <select {...register('role')} style={selectStyle}>
-                  {ROLES.map((role) => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-              </Field.Root>
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap="4">
+                <Field.Root invalid={!!errors.role}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Rol</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('role')} bg="white" borderColor="surface.border" fontSize="sm">
+                      {ROLES.map((role) => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.startup}>
-                <Field.Label color="fg.muted" fontSize="sm">Startup / Empresa</Field.Label>
-                <Input {...register('startup')} maxLength={80} bg="surface.input" borderColor="surface.border" />
-              </Field.Root>
+                <Field.Root invalid={!!errors.startup}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Startup / Empresa</Field.Label>
+                  <Input {...register('startup')} maxLength={80} bg="white" borderColor="surface.border" fontSize="sm" />
+                </Field.Root>
+              </SimpleGrid>
 
-              <Field.Root invalid={!!errors.startupUrl}>
-                <Field.Label color="fg.muted" fontSize="sm">Sitio web (opcional)</Field.Label>
-                <Input {...register('startupUrl')} placeholder="https://miempresa.com" type="url" bg="surface.input" borderColor="surface.border" _placeholder={{ color: 'fg.subtle' }} />
-                {errors.startupUrl && <Field.ErrorText>{errors.startupUrl.message}</Field.ErrorText>}
-              </Field.Root>
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap="4">
+                <Field.Root invalid={!!errors.startupUrl}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Sitio web (opcional)</Field.Label>
+                  <Input {...register('startupUrl')} placeholder="https://miempresa.com" type="url" bg="white" borderColor="surface.border" fontSize="sm" _placeholder={{ color: 'fg.subtle' }} />
+                  {errors.startupUrl && <Field.ErrorText>{errors.startupUrl.message}</Field.ErrorText>}
+                </Field.Root>
 
-              <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">Tamaño del equipo</Field.Label>
-                <select {...register('teamSize')} style={selectStyle}>
-                  <option value="">Seleccionar...</option>
-                  {TEAM_SIZES.map((size) => (
-                    <option key={size} value={size}>
-                      {size} {size === 'Solo founder' ? '' : 'personas'}
-                    </option>
-                  ))}
-                </select>
-              </Field.Root>
+                <Field.Root>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Tamaño del equipo</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('teamSize')} bg="white" borderColor="surface.border" fontSize="sm">
+                      <option value="">Seleccionar...</option>
+                      {TEAM_SIZES.map((size) => (
+                        <option key={size} value={size}>
+                          {size} {size === 'Solo founder' ? '' : 'personas'}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                </Field.Root>
+              </SimpleGrid>
             </Stack>
           </Box>
 
-          <Box bg="surface.card" borderRadius="xl" p="5" borderWidth="1px" borderColor="surface.border">
+          {/* Divider */}
+          <Box borderTopWidth="1px" borderColor="surface.border" />
+
+          {/* Section 2: Contá quién sos y qué buscás */}
+          <Box>
+            <SectionHeader icon={Target} title="Contá quién sos y qué buscás" />
             <Stack gap="4">
               <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">Industria (máx. 3)</Field.Label>
+                <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Industria (máx. 3)</Field.Label>
                 <Controller
                   name="industries"
                   control={control}
                   render={({ field }) => (
-                    <ChipSelect options={INDUSTRIES} value={field.value} onChange={field.onChange} max={3} />
+                    <ChipSelect options={INDUSTRIES} value={field.value} onChange={field.onChange} max={3} colorScheme="green" />
                   )}
                 />
               </Field.Root>
 
               <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">¿Qué buscás? (máx. 2)</Field.Label>
+                <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">¿Qué buscás? (máx. 2)</Field.Label>
                 <Controller
                   name="lookingFor"
                   control={control}
                   render={({ field }) => (
-                    <ChipSelect options={INTENTS} value={field.value} onChange={field.onChange} max={2} />
+                    <ChipSelect options={INTENTS} value={field.value} onChange={field.onChange} max={2} colorScheme="blue" />
                   )}
                 />
               </Field.Root>
 
               <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">Intereses (máx. 3)</Field.Label>
+                <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Intereses (máx. 3)</Field.Label>
                 <Controller
                   name="interests"
                   control={control}
                   render={({ field }) => (
-                    <ChipSelect options={INTERESTS} value={field.value} onChange={field.onChange} max={3} />
+                    <ChipSelect options={INTERESTS} value={field.value} onChange={field.onChange} max={3} colorScheme="orange" />
                   )}
                 />
               </Field.Root>
             </Stack>
           </Box>
 
-          <Box bg="surface.card" borderRadius="xl" p="5" borderWidth="1px" borderColor="surface.border">
+          {/* Divider */}
+          <Box borderTopWidth="1px" borderColor="surface.border" />
+
+          {/* Section 3: Sobre vos */}
+          <Box>
+            <SectionHeader icon={FileText} title="Sobre vos" />
             <Stack gap="4">
               <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">Bio ({bioLength}/280)</Field.Label>
-                <Textarea {...register('bio')} maxLength={280} rows={3} bg="surface.input" borderColor="surface.border" />
+                <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Bio ({bioLength}/280)</Field.Label>
+                <Textarea {...register('bio')} maxLength={280} rows={3} bg="white" borderColor="surface.border" fontSize="sm" />
               </Field.Root>
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap="4">
+                <Field.Root>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">Ciudad</Field.Label>
+                  <Input {...register('city')} maxLength={80} bg="white" borderColor="surface.border" fontSize="sm" />
+                </Field.Root>
+
+                <Field.Root invalid={!!errors.linkedinUrl}>
+                  <Field.Label color="fg.muted" fontSize="sm" fontWeight="500">LinkedIn URL (opcional)</Field.Label>
+                  <Input {...register('linkedinUrl')} placeholder="https://linkedin.com/in/..." type="url" bg="white" borderColor="surface.border" fontSize="sm" _placeholder={{ color: 'fg.subtle' }} />
+                  {errors.linkedinUrl && <Field.ErrorText>{errors.linkedinUrl.message}</Field.ErrorText>}
+                </Field.Root>
+              </SimpleGrid>
 
               <Field.Root>
-                <Field.Label color="fg.muted" fontSize="sm">Ciudad</Field.Label>
-                <Input {...register('city')} maxLength={80} bg="surface.input" borderColor="surface.border" />
-              </Field.Root>
-
-              <Field.Root invalid={!!errors.linkedinUrl}>
-                <Field.Label color="fg.muted" fontSize="sm">LinkedIn URL</Field.Label>
-                <Input {...register('linkedinUrl')} placeholder="https://linkedin.com/in/..." type="url" bg="surface.input" borderColor="surface.border" _placeholder={{ color: 'fg.subtle' }} />
-                {errors.linkedinUrl && <Field.ErrorText>{errors.linkedinUrl.message}</Field.ErrorText>}
-              </Field.Root>
-
-              <Field.Root>
-                <HStack justify="space-between">
-                  <Field.Label mb="0" color="fg.muted" fontSize="sm">Visible para otros miembros</Field.Label>
+                <HStack justify="space-between" align="center">
+                  <Stack gap="0">
+                    <Field.Label mb="0" fontSize="sm" fontWeight="500">Visible para otros miembros</Field.Label>
+                    <Text fontSize="xs" color="fg.subtle">
+                      Tu perfil podrá ser visto en Descubrir y tu comunidad
+                    </Text>
+                  </Stack>
                   <Controller
                     name="visible"
                     control={control}
@@ -248,53 +391,69 @@ export function SettingsForm({ profile }: { profile: Profile }) {
             </Stack>
           </Box>
 
-          <Button type="submit" size="lg" colorPalette="brand" loading={saving}>
-            {saved ? 'Guardado' : 'Guardar cambios'}
-          </Button>
+          {/* Divider */}
+          <Box borderTopWidth="1px" borderColor="surface.border" />
 
-          <Button
-            variant="outline"
-            onClick={() => signOut({ callbackUrl: '/' })}
-          >
-            <LogOut size={16} />
-            Cerrar sesión
-          </Button>
-
-          {!showDelete ? (
+          {/* Actions */}
+          <Stack gap="3">
             <Button
-              variant="ghost"
-              colorPalette="red"
-              size="sm"
-              onClick={() => setShowDelete(true)}
+              type="submit"
+              size="lg"
+              colorPalette="brand"
+              borderRadius="full"
+              loading={saving}
+              fontWeight="600"
             >
-              <Trash2 size={14} />
-              Eliminar mi cuenta
+              {saved ? 'Guardado' : 'Guardar cambios'}
             </Button>
-          ) : (
-            <Box p="4" bg="surface.card" borderWidth="1px" borderColor="red.800" borderRadius="xl">
-              <Text fontSize="sm" color="red.400" mb="3">
-                Esta acción es irreversible. Se eliminará tu cuenta y todos tus datos.
-              </Text>
-              <Stack direction="row" gap="2">
-                <Button
-                  colorPalette="red"
-                  size="sm"
-                  flex="1"
-                  onClick={handleDelete}
-                >
-                  Confirmar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  flex="1"
-                  onClick={() => setShowDelete(false)}
-                >
-                  Cancelar
-                </Button>
-              </Stack>
-            </Box>
-          )}
+
+            <Button
+              variant="outline"
+              borderRadius="full"
+              onClick={() => signOut({ callbackUrl: '/' })}
+            >
+              <LogOut size={16} />
+              Cerrar sesión
+            </Button>
+
+            {!showDelete ? (
+              <Button
+                variant="ghost"
+                colorPalette="red"
+                size="sm"
+                onClick={() => setShowDelete(true)}
+              >
+                <Trash2 size={14} />
+                Eliminar mi cuenta
+              </Button>
+            ) : (
+              <Box p="4" borderWidth="1px" borderColor="red.300" borderRadius="xl" bg="red.50">
+                <Text fontSize="sm" color="red.600" mb="3">
+                  Esta acción es irreversible. Se eliminará tu cuenta y todos tus datos.
+                </Text>
+                <Stack direction="row" gap="2">
+                  <Button
+                    colorPalette="red"
+                    size="sm"
+                    flex="1"
+                    borderRadius="full"
+                    onClick={handleDelete}
+                  >
+                    Confirmar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    flex="1"
+                    borderRadius="full"
+                    onClick={() => setShowDelete(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+          </Stack>
         </Stack>
       </form>
     </Container>

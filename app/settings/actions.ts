@@ -5,6 +5,8 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 import { ROLES, INDUSTRIES, INTENTS, INTERESTS, TEAM_SIZES } from '@/lib/constants'
 
 const ProfileSchema = z.object({
@@ -52,6 +54,38 @@ export async function deleteAccount() {
 
   await prisma.user.delete({ where: { id: session.user.id } })
   redirect('/')
+}
+
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_SIZE = 2 * 1024 * 1024 // 2 MB
+
+export async function uploadAvatar(base64: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  const match = base64.match(/^data:(image\/\w+);base64,(.+)$/)
+  if (!match) throw new Error('Formato inválido')
+
+  const mime = match[1]
+  if (!ALLOWED_MIME.includes(mime)) throw new Error('Formato no soportado')
+
+  const buffer = Buffer.from(match[2], 'base64')
+  if (buffer.length > MAX_SIZE) throw new Error('Imagen demasiado grande (máx 2MB)')
+
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'
+  const filename = `${session.user.id}.${ext}`
+  const dir = path.join(process.cwd(), 'public', 'avatars')
+  await mkdir(dir, { recursive: true })
+  await writeFile(path.join(dir, filename), buffer)
+
+  const avatarUrl = `/avatars/${filename}?v=${Date.now()}`
+
+  await prisma.profile.update({
+    where: { id: session.user.id },
+    data: { avatarUrl },
+  })
+
+  return { avatarUrl }
 }
 
 export async function getMyProfile() {

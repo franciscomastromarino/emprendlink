@@ -1,4 +1,4 @@
-import { Heading, Container } from '@chakra-ui/react'
+import { Box, Container, Heading, Stack, Text } from '@chakra-ui/react'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
@@ -37,11 +37,27 @@ export default async function DiscoverPage() {
   })
 
   return (
-    <Container maxW="lg" py="6">
-      <Heading size="xl" mb="6" textAlign="center">
-        Descubrir
-      </Heading>
-      <SwipeCards initialProfiles={profiles} />
-    </Container>
+    <Box>
+      {/* Blue gradient top background */}
+      <Box
+        bg="linear-gradient(180deg, #EAF0FB 0%, #FFFFFF 100%)"
+        pt="6"
+        pb="24"
+      >
+        <Container maxW="lg">
+          <Stack gap="1">
+            <Heading size="xl">Descubrir</Heading>
+            <Text fontSize="sm" color="fg.muted">
+              Conectá con emprendedores de tu comunidad
+            </Text>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* Card overlapping the blue area */}
+      <Container maxW="lg" mt="-20" pb="6">
+        <SwipeCards initialProfiles={profiles} />
+      </Container>
+    </Box>
   )
 }

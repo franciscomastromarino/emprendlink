@@ -10,6 +10,7 @@ import {
   Field,
   Heading,
   Input,
+  NativeSelect,
   Stack,
 } from '@chakra-ui/react'
 import { useState } from 'react'
@@ -19,16 +20,6 @@ import { saveStep2 } from '../actions'
 import { trackEvent } from '@/lib/analytics'
 import { ProgressBar } from '../progress-bar'
 import Link from 'next/link'
-
-const selectStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '8px 12px',
-  borderRadius: '8px',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  fontSize: '16px',
-  backgroundColor: '#1A1D35',
-  color: 'white',
-}
 
 const schema = z.object({
   role: z.enum(ROLES as unknown as [string, ...string[]], 'Elegí un rol'),
@@ -78,12 +69,15 @@ export default function Step2Page() {
               <Stack gap="4">
                 <Field.Root invalid={!!errors.role}>
                   <Field.Label color="fg.muted" fontSize="sm">Rol</Field.Label>
-                  <select {...register('role')} style={selectStyle}>
-                    <option value="">Seleccionar...</option>
-                    {ROLES.map((role) => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('role')} bg="surface.input" borderColor="surface.border">
+                      <option value="">Seleccionar...</option>
+                      {ROLES.map((role) => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
                   {errors.role && (
                     <Field.ErrorText>{errors.role.message}</Field.ErrorText>
                   )}
@@ -114,14 +108,17 @@ export default function Step2Page() {
 
                 <Field.Root invalid={!!errors.teamSize}>
                   <Field.Label color="fg.muted" fontSize="sm">Tamaño del equipo</Field.Label>
-                  <select {...register('teamSize')} style={selectStyle}>
-                    <option value="">Seleccionar...</option>
-                    {TEAM_SIZES.map((size) => (
-                      <option key={size} value={size}>
-                        {size} {size === 'Solo founder' ? '' : 'personas'}
-                      </option>
-                    ))}
-                  </select>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field {...register('teamSize')} bg="surface.input" borderColor="surface.border">
+                      <option value="">Seleccionar...</option>
+                      {TEAM_SIZES.map((size) => (
+                        <option key={size} value={size}>
+                          {size} {size === 'Solo founder' ? '' : 'personas'}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
                   {errors.teamSize && (
                     <Field.ErrorText>{errors.teamSize.message}</Field.ErrorText>
                   )}
@@ -138,6 +135,7 @@ export default function Step2Page() {
                         value={field.value}
                         onChange={field.onChange}
                         max={3}
+                        colorScheme="green"
                       />
                     )}
                   />

@@ -1,36 +1,36 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 import { Providers } from './providers'
 import { Navbar } from '@/components/navbar'
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-montserrat',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Founder Radar',
-  description: 'Networking para miembros de Emprending',
+  title: 'EmprendLink (no oficial)',
+  description: 'Networking para miembros de EmprendLink (no oficial)',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Founder Radar',
+    title: 'EmprendLink',
   },
   openGraph: {
-    title: 'Founder Radar',
-    description: 'Conecta con otros emprendedores de tu comunidad',
+    title: 'EmprendLink (no oficial)',
+    description: 'Conectá con emprendedores de tu comunidad',
     type: 'website',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0B0D1A',
+  themeColor: '#2E5EA6',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  colorScheme: 'dark',
+  colorScheme: 'light',
 }
 
 export default function RootLayout({
@@ -39,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${inter.variable} dark`}>
-      <body suppressHydrationWarning style={{ background: '#0B0D1A', paddingBottom: '72px' }}>
+    <html lang="es" suppressHydrationWarning className={montserrat.variable}>
+      <body suppressHydrationWarning style={{ background: '#FFFFFF' }}>
         <Providers>
           {children}
           <Navbar />

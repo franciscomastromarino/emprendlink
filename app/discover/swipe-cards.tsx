@@ -18,7 +18,7 @@ import Link from 'next/link'
 import type { Profile } from '@prisma/client'
 import { likeProfile } from './actions'
 import { trackEvent } from '@/lib/analytics'
-import { ThumbsUp, X, MapPin } from 'lucide-react'
+import { Zap, X, MapPin, Users, ChevronRight, CircleCheck, MoreHorizontal } from 'lucide-react'
 
 function MatchBanner({
   name,
@@ -29,7 +29,6 @@ function MatchBanner({
 }) {
   return (
     <Stack align="center" gap="5" p="8" textAlign="center">
-      {/* Match illustration */}
       <Box w="120px" h="80px">
         <svg viewBox="0 0 120 80" width="120" height="80">
           <defs>
@@ -39,26 +38,25 @@ function MatchBanner({
             </radialGradient>
           </defs>
           <circle cx="60" cy="40" r="38" fill="url(#matchGlow)" />
-          <circle cx="42" cy="35" r="10" fill="#1A1D35" stroke="#22c55e" strokeWidth="1.5" />
+          <circle cx="42" cy="35" r="10" fill="#F5F5F5" stroke="#22c55e" strokeWidth="1.5" />
           <circle cx="42" cy="32" r="4" fill="#4ade80" />
-          <circle cx="78" cy="35" r="10" fill="#1A1D35" stroke="#22c55e" strokeWidth="1.5" />
+          <circle cx="78" cy="35" r="10" fill="#F5F5F5" stroke="#22c55e" strokeWidth="1.5" />
           <circle cx="78" cy="32" r="4" fill="#4ade80" />
           <path d="M52 40 Q60 50 68 40" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="3 2">
             <animate attributeName="stroke-dashoffset" values="0;10" dur="1.5s" repeatCount="indefinite" />
           </path>
         </svg>
       </Box>
-
       <Stack gap="2">
         <Heading size="lg" color="green.400">Match!</Heading>
         <Text fontSize="lg">
-          Vos y <Text as="span" fontWeight="bold" color="white">{name}</Text> se dieron like mutuamente.
+          Vos y <Text as="span" fontWeight="bold">{name}</Text> se dieron like mutuamente.
         </Text>
         <Text color="fg.muted" fontSize="sm">
           Podés contactarlo/a desde tu lista de matches.
         </Text>
       </Stack>
-      <Button onClick={onContinue} colorPalette="green" size="lg" w="full">
+      <Button onClick={onContinue} colorPalette="green" size="lg" w="full" borderRadius="full">
         Seguir descubriendo
       </Button>
     </Stack>
@@ -67,77 +65,164 @@ function MatchBanner({
 
 function ProfileCard({ profile }: { profile: Profile }) {
   return (
-    <Stack gap="4" align="center" textAlign="center">
+    <Stack gap="4" align="center" textAlign="center" py="2">
+      {/* Top row: status + menu */}
+      <HStack w="full" justify="space-between" px="1">
+        <HStack gap="1.5">
+          <Box w="2" h="2" borderRadius="full" bg="success.400" />
+          <Text fontSize="xs" color="success.400" fontWeight="600">Disponible</Text>
+        </HStack>
+        <Box color="fg.subtle" cursor="pointer" role="button" tabIndex={0} aria-label="Más opciones">
+          <MoreHorizontal size={18} />
+        </Box>
+      </HStack>
+
+      {/* Avatar with ring + icon badge */}
       <Box position="relative">
-        {/* Avatar glow */}
+        <Box
+          borderRadius="full"
+          p="0.5"
+          borderWidth="2px"
+          borderColor="surface.border"
+        >
+          <Avatar.Root size="2xl">
+            <Avatar.Image src={profile.avatarUrl ?? undefined} />
+            <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
+          </Avatar.Root>
+        </Box>
+        {/* Lightning badge */}
         <Box
           position="absolute"
-          inset="-8"
+          bottom="0"
+          right="0"
+          w="8"
+          h="8"
           borderRadius="full"
-          bg="radial-gradient(circle, rgba(67,24,255,0.2) 0%, transparent 70%)"
-          pointerEvents="none"
-        />
-        <Avatar.Root size="2xl">
-          <Avatar.Image src={profile.avatarUrl ?? undefined} />
-          <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
-        </Avatar.Root>
+          bg="#3B7DDD"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          borderWidth="3px"
+          borderColor="white"
+        >
+          <Zap size={14} color="white" fill="white" />
+        </Box>
       </Box>
 
-      <Stack gap="1">
+      {/* Name & role */}
+      <Stack gap="0.5">
         <Heading size="lg">{profile.fullName}</Heading>
-        <Text color="fg.muted">
+        <Text color="fg.muted" fontSize="sm">
           {profile.role} en{' '}
           {profile.startupUrl ? (
-            <ChakraLink href={profile.startupUrl} target="_blank" color="brand.400">
+            <ChakraLink href={profile.startupUrl} target="_blank" color="fg.DEFAULT" fontWeight="600">
               {profile.startup}
             </ChakraLink>
           ) : (
-            profile.startup
+            <Text as="span" fontWeight="600" color="fg.DEFAULT">{profile.startup}</Text>
           )}
         </Text>
-        {profile.teamSize && (
-          <Text fontSize="sm" color="fg.muted">
-            {profile.teamSize} {profile.teamSize === 'Solo founder' ? '' : 'personas'}
-          </Text>
-        )}
-        {profile.city && (
-          <Text fontSize="sm" color="fg.muted" display="flex" alignItems="center" justifyContent="center" gap="1">
-            <MapPin size={13} />
-            {profile.city}
-          </Text>
-        )}
       </Stack>
 
+      {/* Meta: team size + city */}
+      <HStack gap="2" color="fg.muted" fontSize="xs" flexWrap="wrap" justify="center">
+        {profile.teamSize && (
+          <HStack gap="1">
+            <Users size={12} />
+            <Text>{profile.teamSize} {profile.teamSize === 'Solo founder' ? '' : 'personas'}</Text>
+          </HStack>
+        )}
+        {profile.teamSize && profile.city && (
+          <Text color="fg.subtle">&#183;</Text>
+        )}
+        {profile.city && (
+          <HStack gap="1">
+            <MapPin size={12} />
+            <Text>{profile.city}</Text>
+          </HStack>
+        )}
+      </HStack>
+
+      {/* Bio */}
       {profile.bio && (
-        <Text fontStyle="italic" color="fg.muted">&ldquo;{profile.bio}&rdquo;</Text>
+        <Box px="4">
+          <Text fontSize="sm" color="fg.muted" fontStyle="italic" lineHeight="1.5">
+            <Text as="span" color="brand.400" fontWeight="600" fontStyle="normal">&ldquo; </Text>
+            {profile.bio}
+            <Text as="span" color="brand.400" fontWeight="600" fontStyle="normal"> &rdquo;</Text>
+          </Text>
+        </Box>
       )}
 
+      {/* Looking for badges */}
       <Wrap gap="2" justify="center">
         {profile.lookingFor.map((item) => (
-          <Badge key={item} colorPalette="brand">
+          <Badge
+            key={item}
+            fontSize="xs"
+            px="3"
+            py="1"
+            borderRadius="full"
+            bg="brand.50"
+            color="brand.600"
+            fontWeight="500"
+          >
+            <CircleCheck size={12} />
             Busca: {item}
           </Badge>
         ))}
       </Wrap>
 
-      <Wrap gap="2" justify="center">
-        {profile.interests.map((item) => (
-          <Badge key={item} colorPalette="purple" variant="outline">
-            {item}
-          </Badge>
-        ))}
-      </Wrap>
+      {/* Interests badges */}
+      {profile.interests.length > 0 && (
+        <Wrap gap="2" justify="center">
+          {profile.interests.map((item) => (
+            <Badge
+              key={item}
+              fontSize="xs"
+              px="3"
+              py="1"
+              borderRadius="full"
+              variant="outline"
+              borderColor="#E0E0E0"
+              color="fg.DEFAULT"
+              fontWeight="500"
+            >
+              <Box w="1.5" h="1.5" borderRadius="full" bg="#F5A623" />
+              {item}
+            </Badge>
+          ))}
+        </Wrap>
+      )}
 
-      <Wrap gap="2" justify="center">
-        {profile.industries.map((item) => (
-          <Badge key={item} colorPalette="teal" variant="outline">
-            {item}
-          </Badge>
-        ))}
-      </Wrap>
+      {/* Industries badges */}
+      {profile.industries.length > 0 && (
+        <Wrap gap="2" justify="center">
+          {profile.industries.map((item) => (
+            <Badge
+              key={item}
+              fontSize="xs"
+              px="3"
+              py="1"
+              borderRadius="full"
+              variant="outline"
+              borderColor="#E0E0E0"
+              color="fg.DEFAULT"
+              fontWeight="500"
+            >
+              <Box w="1.5" h="1.5" borderRadius="full" bg="success.400" />
+              {item}
+            </Badge>
+          ))}
+        </Wrap>
+      )}
 
-      <Button asChild variant="ghost" size="sm" color="fg.muted">
-        <Link href={`/profile/${profile.id}`}>Ver perfil completo</Link>
+      {/* View full profile */}
+      <Button asChild variant="ghost" size="sm" color="brand.500" fontWeight="500">
+        <Link href={`/profile/${profile.id}`}>
+          Ver perfil completo
+          <ChevronRight size={14} />
+        </Link>
       </Button>
     </Stack>
   )
@@ -181,8 +266,8 @@ export function SwipeCards({ initialProfiles }: { initialProfiles: Profile[] }) 
 
   if (matchInfo) {
     return (
-      <Container maxW="sm" py="6">
-        <Box bg="surface.card" borderRadius="2xl" borderWidth="1px" borderColor="surface.border" overflow="hidden">
+      <Container maxW="sm" px="0">
+        <Box bg="white" borderRadius="2xl" borderWidth="1px" borderColor="surface.border" boxShadow="0 2px 12px rgba(0,0,0,0.06)" overflow="hidden">
           <MatchBanner name={matchInfo.name} onContinue={handleContinueAfterMatch} />
         </Box>
       </Container>
@@ -191,20 +276,19 @@ export function SwipeCards({ initialProfiles }: { initialProfiles: Profile[] }) 
 
   if (!currentProfile) {
     return (
-      <Container maxW="sm" py="10">
-        <Stack align="center" gap="5" textAlign="center">
-          {/* Empty state illustration */}
+      <Container maxW="sm" px="0">
+        <Stack align="center" gap="5" py="10" textAlign="center">
           <Box w="120px" h="100px">
             <svg viewBox="0 0 120 100" width="120" height="100">
-              <circle cx="60" cy="50" r="40" fill="#141726" stroke="#1A1D35" strokeWidth="2" />
-              <circle cx="60" cy="42" r="12" fill="none" stroke="#8B8FA3" strokeWidth="1.5" />
-              <path d="M42 68 Q60 80 78 68" fill="none" stroke="#8B8FA3" strokeWidth="1.5" />
-              <line x1="75" y1="25" x2="85" y2="15" stroke="#8B8FA3" strokeWidth="1.5" />
-              <line x1="85" y1="25" x2="75" y2="15" stroke="#8B8FA3" strokeWidth="1.5" />
+              <circle cx="60" cy="50" r="40" fill="#F5F5F5" stroke="#E0E0E0" strokeWidth="2" />
+              <circle cx="60" cy="42" r="12" fill="none" stroke="#999999" strokeWidth="1.5" />
+              <path d="M42 68 Q60 80 78 68" fill="none" stroke="#999999" strokeWidth="1.5" />
+              <line x1="75" y1="25" x2="85" y2="15" stroke="#999999" strokeWidth="1.5" />
+              <line x1="85" y1="25" x2="75" y2="15" stroke="#999999" strokeWidth="1.5" />
             </svg>
           </Box>
           <Heading size="lg">No hay más perfiles</Heading>
-          <Text color="fg.muted">
+          <Text color="fg.muted" fontSize="sm">
             Ya viste a todos los miembros disponibles. Volvé más tarde.
           </Text>
         </Stack>
@@ -212,62 +296,57 @@ export function SwipeCards({ initialProfiles }: { initialProfiles: Profile[] }) 
     )
   }
 
+  const remaining = profiles.length - currentIndex - 1
+
   return (
-    <Container maxW="sm" py="4">
-      <Stack gap="5">
+    <Container maxW="sm" px="0">
+      <Stack gap="4">
+        {/* Profile card */}
         <Box
-          bg="surface.card"
+          bg="white"
           borderWidth="1px"
           borderColor="surface.border"
           borderRadius="2xl"
-          p="6"
-          position="relative"
-          overflow="hidden"
+          px="5"
+          py="4"
+          boxShadow="0 2px 12px rgba(0,0,0,0.06)"
         >
-          {/* Top gradient glow */}
-          <Box
-            position="absolute"
-            top="-60px"
-            left="50%"
-            transform="translateX(-50%)"
-            w="300px"
-            h="200px"
-            borderRadius="full"
-            bg="radial-gradient(circle, rgba(67,24,255,0.15) 0%, transparent 70%)"
-            pointerEvents="none"
-          />
-          <Box position="relative">
-            <ProfileCard profile={currentProfile} />
-          </Box>
+          <ProfileCard profile={currentProfile} />
         </Box>
 
-        <HStack gap="4" justify="center">
+        {/* Action buttons */}
+        <HStack gap="3">
           <Button
-            size="xl"
+            size="lg"
             variant="outline"
             onClick={handlePass}
             disabled={loading}
             flex="1"
-            borderRadius="xl"
+            borderRadius="full"
+            borderColor="#E0E0E0"
+            color="fg.muted"
+            fontWeight="500"
           >
-            <X size={20} />
+            <X size={18} />
             Pasar
           </Button>
           <Button
-            size="xl"
+            size="lg"
             colorPalette="brand"
             onClick={handleLike}
             loading={loading}
-            flex="1"
-            borderRadius="xl"
+            flex="1.5"
+            borderRadius="full"
+            fontWeight="600"
           >
-            <ThumbsUp size={20} />
-            Me interesa
+            <Zap size={18} />
+            Conectar
           </Button>
         </HStack>
 
+        {/* Counter */}
         <Text textAlign="center" fontSize="sm" color="fg.subtle">
-          {profiles.length - currentIndex - 1} perfiles restantes
+          {remaining} {remaining === 1 ? 'perfil restante' : 'perfiles restantes'}
         </Text>
       </Stack>
     </Container>
