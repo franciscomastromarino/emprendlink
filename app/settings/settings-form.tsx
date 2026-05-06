@@ -93,17 +93,27 @@ export function SettingsForm({ profile }: { profile: Profile }) {
     if (!file) return
     setUploadingAvatar(true)
     try {
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const base64 = reader.result as string
-        setAvatarPreview(base64)
-        const { avatarUrl } = await uploadAvatar(base64)
-        setAvatarPreview(avatarUrl)
-        setValue('avatarUrl', avatarUrl)
-      }
-      reader.readAsDataURL(file)
+      // Resize image client-side to keep payload small
+      const bitmap = await createImageBitmap(file)
+      const size = 256
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')!
+      // Crop to square from center
+      const min = Math.min(bitmap.width, bitmap.height)
+      const sx = (bitmap.width - min) / 2
+      const sy = (bitmap.height - min) / 2
+      ctx.drawImage(bitmap, sx, sy, min, min, 0, 0, size, size)
+      const base64 = canvas.toDataURL('image/jpeg', 0.8)
+      setAvatarPreview(base64)
+      const { avatarUrl } = await uploadAvatar(base64)
+      setAvatarPreview(avatarUrl)
+      setValue('avatarUrl', avatarUrl)
+    } catch (err) {
+      console.error('Avatar upload failed:', err)
     } finally {
-      setTimeout(() => setUploadingAvatar(false), 500)
+      setUploadingAvatar(false)
     }
   }
 
