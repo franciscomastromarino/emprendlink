@@ -33,7 +33,7 @@ const Step3Schema = z.object({
     .array(z.enum(INTERESTS as unknown as [string, ...string[]]))
     .min(1, 'Elegí al menos uno')
     .max(3, 'Máximo 3'),
-  bio: z.string().max(140).optional().or(z.literal('')),
+  bio: z.string().max(280).optional().or(z.literal('')),
 })
 
 async function getSessionUserId() {
