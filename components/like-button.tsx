@@ -10,13 +10,15 @@ export function LikeButton({
   targetId,
   variant = 'outline',
   size = 'sm',
+  initialLiked = false,
 }: {
   targetId: string
   variant?: 'outline' | 'solid'
   size?: 'sm' | 'md' | 'lg'
+  initialLiked?: boolean
 }) {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<'liked' | 'match' | null>(null)
+  const [result, setResult] = useState<'liked' | 'match' | null>(initialLiked ? 'liked' : null)
 
   const handleLike = async () => {
     if (loading || result) return

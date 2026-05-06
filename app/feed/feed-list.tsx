@@ -9,6 +9,7 @@ import { getFeed } from './actions'
 export function FeedList({
   initialProfiles,
   filters,
+  likedIds = [],
 }: {
   initialProfiles: Profile[]
   filters: {
@@ -17,6 +18,7 @@ export function FeedList({
     roles?: string[]
     search?: string
   }
+  likedIds?: string[]
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [page, setPage] = useState(1)
@@ -64,7 +66,7 @@ export function FeedList({
   return (
     <Stack gap="0" flex="1">
       {profiles.map((profile) => (
-        <ProfileCard key={profile.id} profile={profile} />
+        <ProfileCard key={profile.id} profile={profile} liked={likedIds.includes(profile.id)} />
       ))}
       {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
       {loading && (

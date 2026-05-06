@@ -65,6 +65,12 @@ export default async function FeedPage({ searchParams }: Props) {
     orderBy: { updatedAt: 'desc' },
   })
 
+  const myLikes = await prisma.like.findMany({
+    where: { fromUser: session.user.id },
+    select: { toUser: true },
+  })
+  const likedIds = new Set(myLikes.map((l) => l.toUser))
+
   return (
     <Container maxW="lg" py="6">
       <Stack gap="5">
@@ -82,7 +88,7 @@ export default async function FeedPage({ searchParams }: Props) {
         </Suspense>
 
         {/* Members list */}
-        <FeedList initialProfiles={profiles} filters={filters} />
+        <FeedList initialProfiles={profiles} filters={filters} likedIds={[...likedIds]} />
       </Stack>
     </Container>
   )

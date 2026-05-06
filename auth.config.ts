@@ -21,6 +21,48 @@ export const authConfig: NextAuthConfig = {
   ],
   session: { strategy: 'jwt' },
   callbacks: {
+    async signIn({ user, account }) {
+      if (!account || !user.email) return true
+      // Allow linking accounts with the same email from different providers
+      const { PrismaClient } = await import('@prisma/client')
+      const prisma = new PrismaClient()
+      try {
+        const existingAccount = await prisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+        })
+        if (existingAccount) return true
+
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        })
+        if (existingUser) {
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state as string | undefined,
+            },
+          })
+          user.id = existingUser.id
+        }
+      } finally {
+        await prisma.$disconnect()
+      }
+      return true
+    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
