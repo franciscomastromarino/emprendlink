@@ -15,7 +15,7 @@ import type { Profile } from '@prisma/client'
 import { LikeButton } from '@/components/like-button'
 import { CircleCheck } from 'lucide-react'
 
-export function ProfileCard({ profile, liked = false }: { profile: Profile; liked?: boolean }) {
+export function ProfileCard({ profile, liked = false, matched = false }: { profile: Profile; liked?: boolean; matched?: boolean }) {
   return (
     <Box
       bg="white"
@@ -121,7 +121,7 @@ export function ProfileCard({ profile, liked = false }: { profile: Profile; like
             <Button asChild variant="ghost" size="xs" color="brand.500" fontWeight="500" px="2">
               <Link href={`/profile/${profile.id}`}>Ver perfil</Link>
             </Button>
-            <LikeButton targetId={profile.id} initialLiked={liked} />
+            <LikeButton targetId={profile.id} initialLiked={liked} initialMatch={matched} />
           </HStack>
         </Stack>
       </HStack>

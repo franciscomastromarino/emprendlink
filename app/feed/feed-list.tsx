@@ -10,6 +10,7 @@ export function FeedList({
   initialProfiles,
   filters,
   likedIds = [],
+  matchedIds = [],
 }: {
   initialProfiles: Profile[]
   filters: {
@@ -19,6 +20,7 @@ export function FeedList({
     search?: string
   }
   likedIds?: string[]
+  matchedIds?: string[]
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [page, setPage] = useState(1)
@@ -66,7 +68,7 @@ export function FeedList({
   return (
     <Stack gap="0" flex="1">
       {profiles.map((profile) => (
-        <ProfileCard key={profile.id} profile={profile} liked={likedIds.includes(profile.id)} />
+        <ProfileCard key={profile.id} profile={profile} liked={likedIds.includes(profile.id)} matched={matchedIds.includes(profile.id)} />
       ))}
       {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
       {loading && (

@@ -11,14 +11,18 @@ export function LikeButton({
   variant = 'outline',
   size = 'sm',
   initialLiked = false,
+  initialMatch = false,
 }: {
   targetId: string
   variant?: 'outline' | 'solid'
   size?: 'sm' | 'md' | 'lg'
   initialLiked?: boolean
+  initialMatch?: boolean
 }) {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<'liked' | 'match' | null>(initialLiked ? 'liked' : null)
+  const [result, setResult] = useState<'liked' | 'match' | null>(
+    initialMatch ? 'match' : initialLiked ? 'liked' : null
+  )
 
   const handleLike = async () => {
     if (loading || result) return
