@@ -146,7 +146,7 @@ export default async function HomePage() {
           pointerEvents="none"
         />
 
-        <Container maxW="lg" position="relative">
+        <Container maxW="lg" position="relative" px="6">
           <Stack gap="6" align="center">
             {/* Logo */}
             <HStack gap="2" alignSelf="start">
@@ -197,7 +197,7 @@ export default async function HomePage() {
             <HeroIllustration />
 
             {/* CTA buttons */}
-            <HStack gap="3">
+            <HStack gap="3" w="full" justify="center" px="4">
               <Button
                 asChild
                 size="lg"
@@ -311,8 +311,51 @@ export default async function HomePage() {
         </Stack>
       </Container>
 
+      {/* ── CTA Opción B — Bloque degradado después de "Cómo funciona" ── */}
+      <Container maxW="lg" pb="10" px="6">
+        <Stack
+          align="center"
+          gap="3"
+          bg="linear-gradient(135deg, #1B3B6F 0%, #2E5EA6 100%)"
+          p="6"
+          borderRadius="2xl"
+          position="relative"
+          overflow="hidden"
+        >
+          <Box
+            position="absolute"
+            top="-40%"
+            right="-15%"
+            w="180px"
+            h="180px"
+            bg="radial-gradient(circle, rgba(245,166,35,0.2) 0%, transparent 70%)"
+            borderRadius="full"
+            pointerEvents="none"
+          />
+          <Heading size="md" color="white" textAlign="center" position="relative">
+            ¿Listo para conectar?
+          </Heading>
+          <Text fontSize="sm" color="whiteAlpha.800" textAlign="center" position="relative">
+            Creá tu perfil en menos de 2 minutos
+          </Text>
+          <Button
+            asChild
+            size="lg"
+            bg="#F5A623"
+            color="white"
+            _hover={{ bg: '#E8932F' }}
+            borderRadius="full"
+            px="8"
+            fontWeight="600"
+            position="relative"
+          >
+            <Link href="/login">Empezar ahora</Link>
+          </Button>
+        </Stack>
+      </Container>
+
       {/* ── Community stats banner ── */}
-      <Container maxW="lg" pb="10">
+      <Container maxW="lg" pb="10" px="6">
         <Box
           bg="linear-gradient(135deg, #1B3B6F 0%, #2E5EA6 100%)"
           borderRadius="2xl"
@@ -361,12 +404,60 @@ export default async function HomePage() {
         </Box>
       </Container>
 
+      {/* ── CTA Opción C — Minimalista antes del footer ── */}
+      <Container maxW="lg" pb="10" px="6">
+        <Stack align="center" gap="3">
+          <Text fontSize="sm" fontWeight="600" color="fg.DEFAULT">
+            ¿Sos parte de la comunidad?
+          </Text>
+          <Button
+            asChild
+            size="lg"
+            bg="#F5A623"
+            color="white"
+            _hover={{ bg: '#E8932F' }}
+            borderRadius="full"
+            px="8"
+            fontWeight="600"
+          >
+            <Link href="/login">Iniciar sesión</Link>
+          </Button>
+        </Stack>
+      </Container>
+
       {/* ── Footer note ── */}
-      <Container maxW="lg" pb="8">
+      <Container maxW="lg" pb="24" px="6">
         <Text fontSize="xs" color="fg.subtle" textAlign="center">
           Exclusivo para miembros de EmprendLink (no oficial)
         </Text>
       </Container>
+
+      {/* ── CTA Opción A — Banner sticky en el bottom ── */}
+      <Box
+        position="fixed"
+        bottom="0"
+        left="0"
+        right="0"
+        p="4"
+        bg="white"
+        boxShadow="0 -2px 12px rgba(0,0,0,0.1)"
+        zIndex="10"
+      >
+        <Container maxW="lg">
+          <Button
+            asChild
+            w="full"
+            size="lg"
+            bg="#F5A623"
+            color="white"
+            _hover={{ bg: '#E8932F' }}
+            borderRadius="full"
+            fontWeight="600"
+          >
+            <Link href="/login">Unirme a la comunidad</Link>
+          </Button>
+        </Container>
+      </Box>
     </Box>
   )
 }
