@@ -105,10 +105,12 @@ const config = defineConfig({
       color: '#333333',
       colorScheme: 'light',
     },
-    '@keyframes spinGlow': {
-      from: { transform: 'rotate(0deg)' },
-      to: { transform: 'rotate(360deg)' },
-    },
+    ...({
+      '@keyframes spinGlow': {
+        '0%': { transform: 'rotate(0deg)' },
+        '100%': { transform: 'rotate(360deg)' },
+      },
+    } as object),
   },
 })
 
