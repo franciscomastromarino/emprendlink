@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Container, Heading, Stack, Text } from '@chakra-ui/react'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
