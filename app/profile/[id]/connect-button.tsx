@@ -13,7 +13,9 @@ export function ConnectButton({ targetId }: { targetId: string }) {
     try {
       trackEvent('whatsapp_connect_clicked', { target_id: targetId })
       const link = await connectWithProfile(targetId)
-      window.open(link, '_blank')
+      // Use location.href instead of window.open to avoid popup blockers
+      // (window.open after an await is not considered a user gesture)
+      window.location.href = link
     } finally {
       setLoading(false)
     }
