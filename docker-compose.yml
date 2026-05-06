@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: emprendlink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: emprendlink
+      POSTGRES_PASSWORD: emprendlink_dev
+      POSTGRES_DB: emprendlink
+    ports:
+      - "5433:5432"
+    volumes:
+      - emprendlink_pgdata:/var/lib/postgresql/data
+
+volumes:
+  emprendlink_pgdata:
