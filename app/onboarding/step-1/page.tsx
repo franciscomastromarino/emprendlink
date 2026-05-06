@@ -7,6 +7,7 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import {
+  Avatar,
   Box,
   Button,
   Container,
@@ -15,7 +16,6 @@ import {
   Input,
   Stack,
   Text,
-  Image,
 } from '@chakra-ui/react'
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
@@ -74,17 +74,14 @@ export default function Step1Page() {
           <Stack gap="5">
             <Heading size="lg">Tu identidad</Heading>
 
-            {session?.user?.image && (
-              <Image
-                src={session.user.image}
-                alt="Avatar"
-                boxSize="80px"
-                borderRadius="full"
-                alignSelf="center"
-                borderWidth="2px"
-                borderColor="brand.500"
-              />
-            )}
+            <Box alignSelf="center">
+              <Box borderRadius="full" p="0.5" borderWidth="2px" borderColor="brand.500">
+                <Avatar.Root size="2xl">
+                  <Avatar.Image src={session?.user?.image || undefined} />
+                  <Avatar.Fallback>{session?.user?.name?.[0] || '?'}</Avatar.Fallback>
+                </Avatar.Root>
+              </Box>
+            </Box>
 
             <Box bg="surface.card" borderRadius="xl" p="5" borderWidth="1px" borderColor="surface.border">
               <Stack gap="4">
