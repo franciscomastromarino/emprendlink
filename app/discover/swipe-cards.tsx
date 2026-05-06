@@ -86,7 +86,7 @@ function ProfileCard({ profile }: { profile: Profile }) {
           borderColor="surface.border"
         >
           <Avatar.Root size="2xl">
-            <Avatar.Image src={profile.avatarUrl ?? undefined} />
+            <Avatar.Image src={profile.avatarUrl || undefined} />
             <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
           </Avatar.Root>
         </Box>

@@ -34,7 +34,7 @@ export function ProfileCard({ profile, liked = false }: { profile: Profile; like
             borderColor="surface.border"
           >
             <Avatar.Root size="lg">
-              <Avatar.Image src={profile.avatarUrl ?? undefined} borderRadius="full" />
+              <Avatar.Image src={profile.avatarUrl || undefined} borderRadius="full" />
               <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
             </Avatar.Root>
           </Box>

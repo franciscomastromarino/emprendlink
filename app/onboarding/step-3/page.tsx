@@ -13,6 +13,7 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 import { useState } from 'react'
+import { signOut } from 'next-auth/react'
 import { INTENTS, INTERESTS } from '@/lib/constants'
 import { ChipSelect } from '@/components/chip-select'
 import { saveStep3 } from '../actions'
@@ -139,6 +140,15 @@ export default function Step3Page() {
                 Completar
               </Button>
             </Stack>
+            <Button
+              variant="ghost"
+              size="sm"
+              color="fg.subtle"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              alignSelf="center"
+            >
+              Cerrar sesión
+            </Button>
           </Stack>
         </form>
       </Container>

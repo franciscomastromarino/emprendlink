@@ -78,7 +78,7 @@ function MatchCard({ profile }: { profile: Profile }) {
             borderColor="surface.border"
           >
             <Avatar.Root size="lg">
-              <Avatar.Image src={profile.avatarUrl ?? undefined} borderRadius="full" />
+              <Avatar.Image src={profile.avatarUrl || undefined} borderRadius="full" />
               <Avatar.Fallback>{profile.fullName[0]}</Avatar.Fallback>
             </Avatar.Root>
           </Box>

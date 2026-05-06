@@ -14,6 +14,7 @@ import {
   Stack,
 } from '@chakra-ui/react'
 import { useState } from 'react'
+import { signOut } from 'next-auth/react'
 import { ROLES, INDUSTRIES, TEAM_SIZES } from '@/lib/constants'
 import { ChipSelect } from '@/components/chip-select'
 import { saveStep2 } from '../actions'
@@ -154,6 +155,15 @@ export default function Step2Page() {
                 Siguiente
               </Button>
             </Stack>
+            <Button
+              variant="ghost"
+              size="sm"
+              color="fg.subtle"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              alignSelf="center"
+            >
+              Cerrar sesión
+            </Button>
           </Stack>
         </form>
       </Container>

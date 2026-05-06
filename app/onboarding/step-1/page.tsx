@@ -17,7 +17,7 @@ import {
   Text,
   Image,
 } from '@chakra-ui/react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { saveStep1 } from '../actions'
 import { trackEvent } from '@/lib/analytics'
@@ -123,6 +123,15 @@ export default function Step1Page() {
 
             <Button type="submit" size="lg" colorPalette="brand" loading={submitting}>
               Siguiente
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              color="fg.subtle"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              alignSelf="center"
+            >
+              Cerrar sesión
             </Button>
           </Stack>
         </form>
