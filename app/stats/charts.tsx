@@ -28,7 +28,7 @@ import {
   TrendingUp,
   Percent,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
 
 // --- Types ---
 type KV = { name: string; value: number }
@@ -61,73 +61,9 @@ interface StatsData {
   funnel: FunnelStep[]
 }
 
-// --- City coordinates (LATAM) ---
-const CITY_COORDS: Record<string, [number, number]> = {
-  'Buenos Aires': [-58.38, -34.6],
-  'Córdoba': [-64.18, -31.42],
-  'Rosario': [-60.65, -32.95],
-  'Mendoza': [-68.84, -32.89],
-  'La Plata': [-57.95, -34.92],
-  'Mar del Plata': [-57.55, -38.0],
-  'Tucumán': [-65.2, -26.82],
-  'Salta': [-65.41, -24.79],
-  'Santa Fe': [-60.7, -31.63],
-  'Pergamino': [-60.57, -33.9],
-  'Neuquén': [-68.06, -38.95],
-  'Bariloche': [-71.3, -41.15],
-  'Bahía Blanca': [-62.27, -38.72],
-  'Corrientes': [-58.83, -27.47],
-  'Resistencia': [-59.0, -27.45],
-  'Posadas': [-55.9, -27.37],
-  'San Juan': [-68.54, -31.54],
-  'San Luis': [-66.35, -33.3],
-  'Paraná': [-60.52, -31.73],
-  'Santiago del Estero': [-64.26, -27.78],
-  'Ushuaia': [-68.3, -54.8],
-  // LATAM cities
-  'CDMX': [-99.13, 19.43],
-  'Ciudad de México': [-99.13, 19.43],
-  'Bogotá': [-74.07, 4.71],
-  'Lima': [-77.04, -12.05],
-  'Santiago': [-70.67, -33.45],
-  'Montevideo': [-56.16, -34.9],
-  'São Paulo': [-46.63, -23.55],
-  'Medellín': [-75.56, 6.25],
-  'Guadalajara': [-103.35, 20.67],
-  'Quito': [-78.52, -0.18],
-}
-
 const FUNNEL_COLORS = ['#2E5EA6', '#3B7DDD', '#5A9AE8', '#F5A623', '#22c55e']
 
-// Simple Mercator projection for SVG map
-const MAP_BOUNDS = { minLng: -76, maxLng: -52, minLat: -56, maxLat: -20 }
-const MAP_W = 500
-const MAP_H = 600
-
-function project(lng: number, lat: number): [number, number] {
-  const x = ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * MAP_W
-  const latRad = (lat * Math.PI) / 180
-  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2))
-  const minLatRad = (MAP_BOUNDS.minLat * Math.PI) / 180
-  const maxLatRad = (MAP_BOUNDS.maxLat * Math.PI) / 180
-  const minMercN = Math.log(Math.tan(Math.PI / 4 + minLatRad / 2))
-  const maxMercN = Math.log(Math.tan(Math.PI / 4 + maxLatRad / 2))
-  const y = MAP_H - ((mercN - minMercN) / (maxMercN - minMercN)) * MAP_H
-  return [x, y]
-}
-
-// Simplified Argentina outline (approximate SVG path)
-const ARGENTINA_PATH = `M 280 30 L 310 25 L 330 40 L 340 60 L 350 80 L 360 100
-  L 370 120 L 375 140 L 380 160 L 385 180 L 380 200 L 370 220
-  L 360 240 L 355 260 L 350 280 L 345 300 L 340 320 L 335 340
-  L 330 360 L 320 380 L 310 400 L 300 420 L 280 440 L 260 460
-  L 240 470 L 220 480 L 200 490 L 180 500 L 170 510 L 180 520
-  L 200 530 L 220 540 L 240 545 L 260 540 L 270 530 L 260 520
-  L 250 510 L 260 500 L 280 490 L 290 480 L 280 460 L 270 440
-  L 260 420 L 250 400 L 240 380 L 235 360 L 230 340 L 225 320
-  L 220 300 L 210 280 L 200 260 L 190 240 L 185 220 L 180 200
-  L 175 180 L 180 160 L 190 140 L 200 120 L 210 100 L 220 80
-  L 235 60 L 250 45 L 265 35 Z`
+const BUBBLE_COLORS = ['#2E5EA6', '#3B7DDD', '#5A9AE8', '#8DB8F2', '#F5A623', '#E8932F', '#22c55e', '#4ade80']
 
 // --- KPI Card ---
 function KpiCard({ label, value, icon, sub }: { label: string; value: string | number; icon: ReactNode; sub?: string }) {
@@ -177,99 +113,74 @@ function HBar({ data, color = '#2E5EA6' }: { data: KV[]; color?: string }) {
   )
 }
 
-// --- City Map (pure SVG) ---
+// --- City Bubble Map ---
 function CityMap({ cities }: { cities: KV[] }) {
-  const [hovered, setHovered] = useState<string | null>(null)
   const maxVal = Math.max(...cities.map((c) => c.value), 1)
-
-  const mapped = cities
-    .filter((c) => CITY_COORDS[c.name])
-    .map((c) => {
-      const [lng, lat] = CITY_COORDS[c.name]
-      const [x, y] = project(lng, lat)
-      return { name: c.name, value: c.value, x, y }
-    })
-
-  const unknown = cities.filter((c) => !CITY_COORDS[c.name])
+  const total = cities.reduce((sum, c) => sum + c.value, 0)
 
   return (
-    <Stack gap="3">
-      <Box bg="white" border="1px solid" borderColor="surface.border" borderRadius="xl" overflow="hidden" p="4">
-        <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} width="100%" style={{ maxWidth: 500, display: 'block', margin: '0 auto' }}>
-          {/* Background */}
-          <rect width={MAP_W} height={MAP_H} fill="#F8FAFF" rx="8" />
-
-          {/* Argentina silhouette */}
-          <path d={ARGENTINA_PATH} fill="#E8F0FE" stroke="#C5D9F8" strokeWidth="1.5" />
-
-          {/* Grid lines */}
-          {[0.2, 0.4, 0.6, 0.8].map((pct) => (
-            <line
-              key={`h-${pct}`}
-              x1="0" y1={MAP_H * pct} x2={MAP_W} y2={MAP_H * pct}
-              stroke="#E0E0E0" strokeWidth="0.5" strokeDasharray="4 4"
-            />
-          ))}
-
-          {/* City bubbles */}
-          {mapped.map((city) => {
-            const r = 8 + (city.value / maxVal) * 22
-            const isHovered = hovered === city.name
-            return (
-              <g
-                key={city.name}
-                onMouseEnter={() => setHovered(city.name)}
-                onMouseLeave={() => setHovered(null)}
-                style={{ cursor: 'pointer' }}
-              >
-                {/* Pulse ring */}
-                <circle cx={city.x} cy={city.y} r={r} fill="none" stroke="#2E5EA6" strokeWidth={1} strokeOpacity={0.3}>
-                  <animate attributeName="r" from={String(r)} to={String(r + 8)} dur="2.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.4" to="0" dur="2.5s" repeatCount="indefinite" />
-                </circle>
-                {/* Main bubble */}
-                <circle
-                  cx={city.x} cy={city.y} r={isHovered ? r + 2 : r}
-                  fill="#2E5EA6" fillOpacity={isHovered ? 0.8 : 0.55}
-                  stroke="#1B3B6F" strokeWidth={isHovered ? 2 : 1}
-                  style={{ transition: 'all 0.2s' }}
-                />
-                {/* Count inside bubble */}
-                <text
-                  x={city.x} y={city.y + 1}
-                  textAnchor="middle" dominantBaseline="middle"
-                  style={{ fontSize: r > 16 ? 13 : 10, fontWeight: 700, fill: 'white', pointerEvents: 'none' }}
-                >
-                  {city.value}
-                </text>
-                {/* Label */}
-                <text
-                  x={city.x} y={city.y - r - 6}
-                  textAnchor="middle"
-                  style={{
-                    fontSize: isHovered ? 12 : 10,
-                    fontWeight: isHovered ? 700 : 500,
-                    fill: '#1B3B6F',
-                    transition: 'all 0.2s',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {city.name}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
+    <Box bg="white" border="1px solid" borderColor="surface.border" borderRadius="xl" p="5">
+      {/* Bubble visualization */}
+      <Box display="flex" flexWrap="wrap" justifyContent="center" gap="4" mb="5">
+        {cities.map((city, i) => {
+          const size = 48 + (city.value / maxVal) * 72
+          const color = BUBBLE_COLORS[i % BUBBLE_COLORS.length]
+          const pct = total > 0 ? Math.round((city.value / total) * 100) : 0
+          return (
+            <Stack key={city.name} align="center" gap="1.5">
+              <Box position="relative">
+                <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                  <circle
+                    cx={size / 2} cy={size / 2} r={size / 2 - 2}
+                    fill={color} fillOpacity={0.15}
+                    stroke={color} strokeWidth={2}
+                  />
+                  <circle
+                    cx={size / 2} cy={size / 2} r={size / 2 - 2}
+                    fill="none" stroke={color} strokeWidth={2} strokeOpacity={0.3}
+                  >
+                    <animate attributeName="r" from={String(size / 2 - 2)} to={String(size / 2 + 4)} dur="3s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.3" to="0" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                  <text
+                    x={size / 2} y={size / 2}
+                    textAnchor="middle" dominantBaseline="central"
+                    style={{ fontSize: size > 80 ? 22 : 16, fontWeight: 700, fill: color }}
+                  >
+                    {city.value}
+                  </text>
+                </svg>
+              </Box>
+              <Text fontSize="xs" fontWeight="600" color="fg.DEFAULT" textAlign="center" lineHeight="1.2">
+                {city.name}
+              </Text>
+              <Text fontSize="2xs" color="fg.subtle">{pct}%</Text>
+            </Stack>
+          )
+        })}
       </Box>
-      {unknown.length > 0 && (
-        <Box bg="surface.elevated" borderRadius="lg" p="3">
-          <Text fontSize="xs" color="fg.subtle">
-            Otras ciudades:{' '}
-            {unknown.map((c) => `${c.name} (${c.value})`).join(', ')}
-          </Text>
-        </Box>
-      )}
-    </Stack>
+
+      {/* Ranked list below */}
+      <Stack gap="2">
+        {cities.map((city, i) => {
+          const pct = total > 0 ? Math.round((city.value / total) * 100) : 0
+          const color = BUBBLE_COLORS[i % BUBBLE_COLORS.length]
+          return (
+            <HStack key={city.name} gap="3">
+              <Box w="3" h="3" borderRadius="full" bg={color} flexShrink={0} />
+              <Text fontSize="sm" flex="1">{city.name}</Text>
+              <Text fontSize="sm" fontWeight="600" color="fg.muted">{city.value}</Text>
+              <Box w="80px">
+                <Box bg="surface.elevated" borderRadius="full" h="2" overflow="hidden">
+                  <Box bg={color} h="full" borderRadius="full" style={{ width: `${(city.value / maxVal) * 100}%` }} />
+                </Box>
+              </Box>
+              <Text fontSize="xs" color="fg.subtle" w="35px" textAlign="right">{pct}%</Text>
+            </HStack>
+          )
+        })}
+      </Stack>
+    </Box>
   )
 }
 
