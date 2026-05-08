@@ -13,10 +13,16 @@ const Step1Schema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
 })
 
+const normalizeUrl = (val: string) => {
+  if (!val) return val
+  if (!/^https?:\/\//i.test(val)) return `https://${val}`
+  return val
+}
+
 const Step2Schema = z.object({
   role: z.enum(ROLES as unknown as [string, ...string[]]),
   startup: z.string().min(1, 'Requerido').max(80),
-  startupUrl: z.string().url().optional().or(z.literal('')),
+  startupUrl: z.string().transform(normalizeUrl).pipe(z.string().url()).optional().or(z.literal('')),
   teamSize: z.enum(TEAM_SIZES as unknown as [string, ...string[]], 'Elegí el tamaño'),
   industries: z
     .array(z.enum(INDUSTRIES as unknown as [string, ...string[]]))
@@ -45,6 +51,10 @@ async function getSessionUserId() {
 export async function saveStep1(input: z.infer<typeof Step1Schema>) {
   const userId = await getSessionUserId()
   const data = Step1Schema.parse(input)
+
+  // Ensure the User row exists (stale JWT sessions from deleted accounts)
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+  if (!user) redirect('/login')
 
   await prisma.profile.upsert({
     where: { id: userId },

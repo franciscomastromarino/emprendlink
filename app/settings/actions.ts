@@ -7,20 +7,26 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ROLES, INDUSTRIES, INTENTS, INTERESTS, TEAM_SIZES } from '@/lib/constants'
 
+const normalizeUrl = (val: string) => {
+  if (!val) return val
+  if (!/^https?:\/\//i.test(val)) return `https://${val}`
+  return val
+}
+
 const ProfileSchema = z.object({
   fullName: z.string().min(2).max(80),
   whatsappE164: z.string().refine(isValidPhoneNumber, 'Número inválido'),
   avatarUrl: z.string().optional().or(z.literal('')),
   role: z.enum(ROLES as unknown as [string, ...string[]]),
   startup: z.string().min(1).max(80),
-  startupUrl: z.string().url().optional().or(z.literal('')),
+  startupUrl: z.string().transform(normalizeUrl).pipe(z.string().url()).optional().or(z.literal('')),
   teamSize: z.enum(TEAM_SIZES as unknown as [string, ...string[]]).optional().or(z.literal('')),
   industries: z.array(z.string()).min(1).max(3),
   lookingFor: z.array(z.string()).min(1).max(2),
   interests: z.array(z.string()).min(1).max(3),
   bio: z.string().max(280).optional().or(z.literal('')),
   city: z.string().max(80).optional().or(z.literal('')),
-  linkedinUrl: z.string().url().optional().or(z.literal('')),
+  linkedinUrl: z.string().transform(normalizeUrl).pipe(z.string().url()).optional().or(z.literal('')),
   visible: z.boolean(),
 })
 

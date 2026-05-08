@@ -22,10 +22,16 @@ import { trackEvent } from '@/lib/analytics'
 import { ProgressBar } from '../progress-bar'
 import Link from 'next/link'
 
+const normalizeUrl = (val: string) => {
+  if (!val) return val
+  if (!/^https?:\/\//i.test(val)) return `https://${val}`
+  return val
+}
+
 const schema = z.object({
   role: z.enum(ROLES as unknown as [string, ...string[]], 'Elegí un rol'),
   startup: z.string().min(1, 'Requerido').max(80),
-  startupUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  startupUrl: z.string().transform(normalizeUrl).pipe(z.string().url('URL inválida')).optional().or(z.literal('')),
   teamSize: z.enum(TEAM_SIZES as unknown as [string, ...string[]], 'Elegí el tamaño'),
   industries: z
     .array(z.string())

@@ -40,20 +40,26 @@ import {
   ChevronLeft,
 } from 'lucide-react'
 
+const normalizeUrl = (val: string) => {
+  if (!val) return val
+  if (!/^https?:\/\//i.test(val)) return `https://${val}`
+  return val
+}
+
 const schema = z.object({
   fullName: z.string().min(2).max(80),
   whatsappE164: z.string().refine(isValidPhoneNumber, 'Número inválido'),
   avatarUrl: z.string().optional(),
   role: z.enum(ROLES as unknown as [string, ...string[]]),
   startup: z.string().min(1).max(80),
-  startupUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  startupUrl: z.string().transform(normalizeUrl).pipe(z.string().url('URL inválida')).optional().or(z.literal('')),
   teamSize: z.string().optional(),
   industries: z.array(z.string()).min(1).max(3),
   lookingFor: z.array(z.string()).min(1).max(2),
   interests: z.array(z.string()).min(1).max(3),
   bio: z.string().max(280).optional(),
   city: z.string().max(80).optional(),
-  linkedinUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  linkedinUrl: z.string().transform(normalizeUrl).pipe(z.string().url('URL inválida')).optional().or(z.literal('')),
   visible: z.boolean(),
 })
 
